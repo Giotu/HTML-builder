@@ -6,11 +6,16 @@ const pathDist = path.join(__dirname, 'project-dist');
 const pathTemplate = path.join(__dirname, 'template.html');
 const pathCopyTemplate = path.join(__dirname, 'project-dist', 'index.html');
 const pathComponents = path.join(__dirname, 'components');
+const pathAssets = path.join(__dirname, 'assets');
+const pathAssetsCopy = path.join(pathDist, 'assets');
 
-fs.mkdir(pathDist, { recursive: true }, (err) => {
-  if (err) return console.log(err.message);
-  createCSSFile();
-  createHTMLFile();
+fs.rm(pathDist, { recursive: true, force: true }, () => {
+  fs.mkdir(pathDist, { recursive: true }, (err) => {
+    if (err) return console.log(err.message);
+    createCSSFile();
+    createHTMLFile();
+    copyDirectory(pathAssets, pathAssetsCopy);
+  });
 });
 
 function createCSSFile() {
@@ -70,6 +75,43 @@ function createHTMLFile() {
             },
           );
         }
+      });
+    });
+  });
+}
+
+function copyDirectory(pathFolder, pathFolderCopy) {
+  fs.rm(pathFolderCopy, { recursive: true, force: true }, () => {
+    fs.mkdir(pathFolderCopy, { recursive: true }, (err) => {
+      if (err) {
+        throw err;
+      }
+      console.log(`folder ${path.parse(pathFolder).name} created`);
+      fs.readdir(pathFolder, { withFileTypes: true }, (err, files) => {
+        if (err) {
+          throw err;
+        }
+        files.forEach((file) => {
+          if (file.isDirectory()) {
+            copyDirectory(
+              path.join(pathFolder, file.name),
+              path.join(pathFolderCopy, file.name),
+            );
+          } else {
+            fs.copyFile(
+              path.join(pathFolder, file.name),
+              path.join(pathFolderCopy, file.name),
+              (err) => {
+                if (err) return console.log(err.message);
+                console.log(
+                  `copy file: ${file.name} in ${
+                    path.parse(pathFolder).name
+                  } folder`,
+                );
+              },
+            );
+          }
+        });
       });
     });
   });
