@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 let template = '';
+let filesProcessed = 0;
 const pathDist = path.join(__dirname, 'project-dist');
 const pathTemplate = path.join(__dirname, 'template.html');
 const pathCopyTemplate = path.join(__dirname, 'project-dist', 'index.html');
@@ -56,7 +57,7 @@ function createHTMLFile() {
     fs.readFile(pathTemplate, 'utf8', (err, data) => {
       template = data;
       if (err) return console.log(err.message);
-      files.forEach((file, indexFile) => {
+      files.forEach((file) => {
         if (path.extname(file) === '.html') {
           const componentName = path.parse(file).name;
           fs.readFile(
@@ -67,7 +68,8 @@ function createHTMLFile() {
                 `{{${componentName}}}`,
                 dataComponent,
               );
-              if (indexFile === files.length - 1) {
+              filesProcessed++;
+              if (filesProcessed === files.length) {
                 fs.writeFile(pathCopyTemplate, template, () => {
                   console.log('Create index.html');
                 });
